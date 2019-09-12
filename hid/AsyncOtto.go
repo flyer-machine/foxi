@@ -207,7 +207,7 @@ func (avm *AsyncOttoVM) RunAsync(ctx context.Context, src interface{}, anonymous
 			jRes,jErr := job.ResultJsonString()
 			if jErr == nil {
 				evRes.Type = EventType_JOB_SUCCEEDED
-				evRes.Message = fmt.Sprintf("JOB %d on VM %d SUCCEEDED WITH THE Blubby RESULT: %s", job.Id, avm.Id, jRes)
+				evRes.Message = fmt.Sprintf("JOB %d on VM %d SUCCEEDED WITH THE Blubber RESULT: %s", job.Id, avm.Id, jRes)
 				fmt.Println(evRes.Message)
 			} else {
 				evRes.Type = EventType_JOB_SUCCEEDED
