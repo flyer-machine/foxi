@@ -1,5 +1,3 @@
-// +build linux
-
 package hid
 
 import (
@@ -10,6 +8,7 @@ import (
 	"sync"
 	"log"
 	"time"
+	"os"
 )
 
 
@@ -423,6 +422,43 @@ func (ctl *HIDController) jsTypingSpeed(call otto.FunctionCall) (res otto.Value)
 		//ToDo: this isn't thread safe at all, additionally it influences type speed of every other running Script
 		ctl.Keyboard.KeyDelayJitter = int(jitter)
 	}
+	return
+}
+
+// ---------------------------
+// new function by TS
+// ---------------------------
+func (ctl *HIDController) jsStoreToInfoFile(call otto.FunctionCall) (res otto.Value) {
+	
+	arg0 := call.Argument(0)
+	infoFileName := "/usr/local/P4wnP1/infoText" 
+	
+	if !arg0.IsString() {
+		log.Printf("HIDScript storeToInfoFile: Wrong argument, it has to be a string. Error location:  %v\n", call.CallerLocation())
+		return
+	}
+
+	infoText,err1 := arg0.ToString()
+	
+	if err1 != nil {
+		log.Printf("HIDScript storeToInfoFile: couldn't convert '%s' to string\n", arg0)
+		return
+	}
+	
+	infoTextOut := []byte(infoText  + "\n")
+	
+    f, err := os.OpenFile(infoFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        log.Printf("HIDScript storeToInfoFile: couldn't open or create info file '%s'\n", infoFileName)
+    }
+    
+    if _, err := f.Write(infoTextOut); err != nil {
+        log.Printf("HIDScript storeToInfoFile: error writing '%s' in info file\n", arg0)
+    }
+    if err := f.Close(); err != nil {
+        log.Printf("HIDScript storeToInfoFile: couldn't close info file '%s'\n", infoFileName)
+    }
+
 	return
 }
 
@@ -879,6 +915,11 @@ func (ctl *HIDController) initVM(vm *otto.Otto) (err error) {
 
 	err = vm.Set("type", ctl.jsType)
 	if err != nil { return err }
+	
+	// new function by ts
+	err = vm.Set("storeToInfoFile", ctl.jsStoreToInfoFile)
+	if err != nil { return err }
+		
 	err = vm.Set("delay", ctl.jsDelay)
 	if err != nil { return err }
 	err = vm.Set("press", ctl.jsPress)
